@@ -915,7 +915,7 @@ void CGameState::initDuel()
 				h->setSecSkillLevel(SecondarySkill(secSkill.first), secSkill.second, 1);
 
 			h->initHero(getRandomGenerator(), HeroTypeID(h->subID));
-			obj->initObj(getRandomGenerator());
+			initObj(obj);
 		}
 		else
 		{
@@ -1849,7 +1849,7 @@ void CGameState::initMapObjects()
 		if(obj)
 		{
 			logGlobal->traceStream() << boost::format ("Calling Init for object %d, %s, %s") % obj->id.getNum() % obj->typeName % obj->subTypeName;
-			obj->initObj(getRandomGenerator());
+			initObj(obj);
 		}
 	}
 	for(CGObjectInstance *obj : map->objects)
@@ -1907,6 +1907,14 @@ void CGameState::initVisitingAndGarrisonedHeroes()
 			assert (hero->visitedTown->visitingHero == hero);
 		}
 	}
+}
+
+void CGameState::initObj(CGObjectInstance * obj)
+{
+	obj->initObj(getRandomGenerator());
+	auto handler = VLC->objtypeh->getHandlerFor(obj->ID, obj->subID);
+	if(handler)
+		handler->setAmbient(obj);
 }
 
 BFieldType CGameState::battleGetBattlefieldType(int3 tile, CRandomGenerator & rand)

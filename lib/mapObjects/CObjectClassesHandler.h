@@ -106,6 +106,8 @@ class DLL_LINKAGE AObjectTypeHandler : public boost::noncopyable
 	JsonNode base; /// describes base template
 
 	std::vector<ObjectTemplate> templates;
+
+	int ambientSound;
 protected:
 	void preInitObject(CGObjectInstance * obj) const;
 	virtual bool objectFilter(const CGObjectInstance *, const ObjectTemplate &) const;
@@ -121,6 +123,7 @@ public:
 	AObjectTypeHandler();
 	virtual ~AObjectTypeHandler();
 
+	void setAmbient(CGObjectInstance * obj) const;
 	void setType(si32 type, si32 subtype);
 	void setTypeName(std::string type, std::string subtype);
 
@@ -165,6 +168,10 @@ public:
 		{
 			h & typeName & subTypeName;
 		}
+		if(version >= 772)
+		{
+			h & ambientSound;
+		}
 	}
 };
 
@@ -185,12 +192,18 @@ class DLL_LINKAGE CObjectClassesHandler : public IHandlerBase
 		std::map<si32, TObjectTypeHandler> subObjects;
 		std::map<std::string, si32> subIds;//full id from core scope -> subtype
 
+		int ambientSound;
+
 		template <typename Handler> void serialize(Handler &h, const int version)
 		{
 			h & name & handlerName & base & subObjects;
 			if(version >= 759)
 			{
 				h & identifier & subIds;
+			}
+			if(version >= 772)
+			{
+				h & ambientSound;
 			}
 		}
 	};
