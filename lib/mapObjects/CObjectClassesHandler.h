@@ -6,6 +6,8 @@
 #include "../ConstTransitivePtr.h"
 #include "../IHandlerBase.h"
 #include "../JsonNode.h"
+/// YAAAAAAAAAAAAAAAAAAAARRR: find proper location for SObjectSounds.
+#include "CObjectHandler.h"
 
 /*
  * CObjectClassesHandler.h, part of VCMI engine
@@ -19,6 +21,7 @@
 
 class JsonNode;
 class CRandomGenerator;
+struct SObjectSounds;
 
 /// Structure that describes placement rules for this object in random map
 struct DLL_LINKAGE RandomMapInfo
@@ -107,7 +110,7 @@ class DLL_LINKAGE AObjectTypeHandler : public boost::noncopyable
 
 	std::vector<ObjectTemplate> templates;
 
-	std::string ambientSound;
+	SObjectSounds sounds;
 protected:
 	void preInitObject(CGObjectInstance * obj) const;
 	virtual bool objectFilter(const CGObjectInstance *, const ObjectTemplate &) const;
@@ -170,7 +173,7 @@ public:
 		}
 		if(version >= 772)
 		{
-			h & ambientSound;
+			h & sounds;
 		}
 	}
 };
@@ -192,7 +195,7 @@ class DLL_LINKAGE CObjectClassesHandler : public IHandlerBase
 		std::map<si32, TObjectTypeHandler> subObjects;
 		std::map<std::string, si32> subIds;//full id from core scope -> subtype
 
-		std::string ambientSound;
+		SObjectSounds sounds;
 
 		template <typename Handler> void serialize(Handler &h, const int version)
 		{
@@ -203,7 +206,7 @@ class DLL_LINKAGE CObjectClassesHandler : public IHandlerBase
 			}
 			if(version >= 772)
 			{
-				h & ambientSound;
+				h & sounds;
 			}
 		}
 	};
