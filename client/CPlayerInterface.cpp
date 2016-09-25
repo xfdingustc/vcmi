@@ -138,6 +138,7 @@ CPlayerInterface::CPlayerInterface(PlayerColor Player)
 
 CPlayerInterface::~CPlayerInterface()
 {
+	stopAmbientSounds();
 	logGlobal->traceStream() << "\tHuman player interface for player " << playerID << " being destructed";
 	//howManyPeople--;
 	//delete pim;
@@ -465,6 +466,9 @@ void CPlayerInterface::openTownWindow(const CGTownInstance * town)
 {
 	if (castleInt)
 		castleInt->close();
+	else
+		stopAmbientSounds();
+
 	castleInt = new CCastleInterface(town);
 	GH.pushInt(castleInt);
 }
@@ -676,6 +680,8 @@ void CPlayerInterface::battleStart(const CCreatureSet *army1, const CCreatureSet
 		// Player shouldn't be able to move on adventure map if quick combat is going
 		adventureInt->quickCombatLock();
 	}
+	else
+		stopAmbientSounds();
 
 	//Don't wait for dialogs when we are non-active hot-seat player
 	if (LOCPLINT == this)
@@ -873,6 +879,8 @@ void CPlayerInterface::battleEnd(const BattleResult *br)
 			return;
 		}
 	}
+	else
+		updateAmbientSounds();
 
 	BATTLE_EVENT_POSSIBLE_RETURN;
 
@@ -2322,9 +2330,11 @@ void CPlayerInterface::acceptTurn()
 	adventureInt->updateNextHero(nullptr);
 	adventureInt->showAll(screen);
 
-	if (settings["session"]["autoSkip"].Bool() && !LOCPLINT->shiftPressed())
+	updateAmbientSounds();
+
+	if(settings["session"]["autoSkip"].Bool() && !LOCPLINT->shiftPressed())
 	{
-		if (CInfoWindow *iw = dynamic_cast<CInfoWindow *>(GH.topInt()))
+		if(CInfoWindow *iw = dynamic_cast<CInfoWindow *>(GH.topInt()))
 			iw->close();
 
 		adventureInt->fendTurn();
@@ -2486,6 +2496,7 @@ void CPlayerInterface::showShipyardDialogOrProblemPopup(const IShipyard *obj)
 void CPlayerInterface::requestReturningToMainMenu()
 {
 	sendCustomEvent(RETURN_TO_MAIN_MENU);
+	stopAmbientSounds();
 	cb->unregisterAllInterfaces();
 }
 
@@ -2960,5 +2971,15 @@ void CPlayerInterface::updateAmbientSounds()
 			CCS->soundh->ambientChannels.insert(std::make_pair(pair.first, channel));
 			logGlobal->warnStream() << "New channel " << channel;
 		}
+	}
+}
+
+void CPlayerInterface::stopAmbientSounds()
+{
+	for(auto ch : CCS->soundh->ambientChannels)
+	{
+		CCS->soundh->stopSound(ch.second);
+		CCS->soundh->ambientChannels -= ch;
+		CCS->soundh->setChannelVolume(ch.second, 100);
 	}
 }
