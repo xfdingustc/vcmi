@@ -68,3 +68,12 @@ notifications:
       - saven.ivan@gmail.com
     on_success: change
     on_failure: always
+    
+after_success:
+- wget https://download.vcmi.eu/travis_deploy_rsa.enc
+- touch /tmp/travis_deploy_rsa
+- chmod 600 /tmp/travis_deploy_rsa
+- openssl aes-256-cbc -K $encrypted_1d30f79f8582_key -iv $encrypted_1d30f79f8582_iv -in travis_deploy_rsa.enc -out /tmp/travis_deploy_rsa -d
+- eval "$(ssh-agent -s)"
+- ssh-add /tmp/travis_deploy_rsa
+- sftp -r -P 2222 -o StrictHostKeyChecking=no travis@beholder.vcmi.eu <<< "put -r $TRAVIS_BUILD_DIR /incoming/$TRAVIS_JOB_ID"
